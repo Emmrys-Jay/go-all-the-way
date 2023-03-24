@@ -16,7 +16,7 @@ func init() {
 
 type Chef struct {
 	Id         string    `json:"id"`
-	Name       string    `json:"name"`
+	Name       string    `json:"name" binding:"required"`
 	Country    string    `json:"country"`
 	YearsOfExp int       `json:"years_of_exp"`
 	CreatedAt  time.Time `json:"created_at"`
