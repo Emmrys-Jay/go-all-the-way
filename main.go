@@ -1,10 +1,12 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/rs/xid"
 	"net/http"
 	"time"
+
+	"github.com/altschool/go-app/pkg/chef"
+	"github.com/gin-gonic/gin"
+	"github.com/rs/xid"
 )
 
 var recipes []Recipe
@@ -15,6 +17,7 @@ func init() {
 
 type Recipe struct {
 	Id           string    `json:"id"`
+	ChefID       string    `json:"chef_id"`
 	Name         string    `json:"name"`
 	Keywords     []string  `json:"keywords"`
 	Ingredients  []string  `json:"ingredients"`
@@ -59,7 +62,6 @@ func UpdateRecipeHandler(c *gin.Context) {
 	}
 
 	index := -1
-
 	for i := 0; i < len(recipes); i++ {
 		if recipes[i].Id == id {
 			index = i
@@ -69,6 +71,14 @@ func UpdateRecipeHandler(c *gin.Context) {
 	if index == -1 {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "Recipe not found",
+		})
+		return
+	}
+
+	// Check if chef exists
+	if !chef.Exists(recipe.ChefID) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "chef does not exist",
 		})
 		return
 	}
@@ -93,6 +103,13 @@ func NewRecipeHandler(c *gin.Context) {
 		return
 	}
 
+	if !chef.Exists(recipe.ChefID) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "chef does not exist",
+		})
+		return
+	}
+
 	recipe.Id = xid.New().String()
 	recipe.PublishedAt = time.Now()
 	recipes = append(recipes, recipe)
@@ -101,9 +118,17 @@ func NewRecipeHandler(c *gin.Context) {
 
 func main() {
 	router := gin.Default()
+
 	router.POST("/recipes", NewRecipeHandler)
 	router.GET("/recipes", ListRecipesHandler)
 	router.PUT("recipes/:recipe-id", UpdateRecipeHandler)
 	router.DELETE("recipes/:recipe-id", DeleteRecipeHandler)
+
+	// Chef endpoints
+	router.POST("/chefs", chef.NewChefHandler)
+	router.GET("/chefs", chef.ListChefsHandler)
+	router.PUT("chefs/:chef-id", chef.UpdateChefHandler)
+	router.DELETE("chefs/:chef-id", chef.DeleteChefHandler)
+
 	router.Run()
 }
