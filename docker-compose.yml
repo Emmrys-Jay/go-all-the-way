@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  emmrys-goapp:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - .:/app
+    ports:
+      - '8080:8080'
+    container_name: emmrys-goapp
