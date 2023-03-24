@@ -17,7 +17,7 @@ func init() {
 
 type Recipe struct {
 	Id           string    `json:"id"`
-	ChefID       string    `json:"chef_id"`
+	ChefID       string    `json:"chef_id" binding:"required"`
 	Name         string    `json:"name"`
 	Keywords     []string  `json:"keywords"`
 	Ingredients  []string  `json:"ingredients"`
